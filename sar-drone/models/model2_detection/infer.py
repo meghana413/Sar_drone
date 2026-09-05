@@ -9,6 +9,16 @@ import cv2
 import numpy as np
 
 
+def _resolve_device(value: str | int) -> str | int:
+    if value != "auto":
+        return value
+    try:
+        import torch
+        return 0 if torch.cuda.is_available() else "cpu"
+    except ImportError:
+        return "cpu"
+
+
 @dataclass(frozen=True)
 class Detection:
     """One detection in pixel coordinates."""
@@ -32,7 +42,7 @@ class Detector:
         self.weights = str(weights)
         self.confidence = confidence
         self.iou = iou
-        self.device = device
+        self.device = _resolve_device(device)
         self._model: Any = None
 
     @property
